@@ -101,7 +101,6 @@ const LAYERS: Layer[] = [
 
 export default function FilterVisualization() {
   const [active, setActive] = useState<string | null>(null)
-  const [expanded, setExpanded] = useState<string | null>(null)
   const totalH = LAYERS.reduce((s, l) => s + l.height, 0) + (LAYERS.length - 1) * 4
 
   return (
@@ -146,13 +145,13 @@ export default function FilterVisualization() {
           {/* Layers */}
           {(() => {
             let y = 0
-            return LAYERS.map((layer, i) => {
+            return LAYERS.map(layer => {
               const top = y
               y += layer.height + 4
               const isActive = active === layer.id
 
               // Pick hatch pattern
-              let hatchFill = layer.color
+              const hatchFill = layer.color
               let hatchOverlay: JSX.Element | null = null
               if (layer.id === 'mycelium') {
                 hatchOverlay = <rect x={22} y={top} width={156} height={layer.height} fill="url(#hatch-mycelium)" opacity={0.7} />

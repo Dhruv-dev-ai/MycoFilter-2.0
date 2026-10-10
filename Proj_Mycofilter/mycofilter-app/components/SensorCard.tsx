@@ -70,7 +70,7 @@ function rangeFraction(v: number | null, min: number, max: number): number {
 
 export default function SensorCard({
   tag, label, value, unit, station, quality, source,
-  trend, trendValue, timestamp, commissioningStatus,
+  trend, timestamp, commissioningStatus,
   onClick, rangeMin, rangeMax, rangeWarnMin, rangeWarnMax, footnote,
 }: SensorCardProps) {
   const col = STATION_COLOURS[station]

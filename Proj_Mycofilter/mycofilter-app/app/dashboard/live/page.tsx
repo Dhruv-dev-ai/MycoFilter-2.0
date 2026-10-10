@@ -3,7 +3,6 @@ import { useApp } from '@/components/AppContext'
 import SensorCard from '@/components/SensorCard'
 import { DEMO_SENSOR_CONFIGS } from '@/lib/demo-data'
 import { RefreshCw } from 'lucide-react'
-import { useEffect, useState } from 'react'
 
 const R: Record<string,{min:number,max:number,wMin?:number,wMax?:number}> = {
   pH:{min:4,max:12,wMin:6.5,wMax:8.5}, turbidity:{min:0,max:300,wMin:0,wMax:50},
@@ -12,8 +11,6 @@ const R: Record<string,{min:number,max:number,wMin?:number,wMax?:number}> = {
 
 export default function LivePage() {
   const { latestReadings, isDemo, refresh, lastUpdateAt } = useApp()
-  const [tick, setTick] = useState(0)
-  useEffect(() => { const t = setInterval(()=>setTick(x=>x+1),1000); return ()=>clearInterval(t) }, [])
   const age = lastUpdateAt ? Math.floor((Date.now()-new Date(lastUpdateAt).getTime())/1000) : null
 
   return (
