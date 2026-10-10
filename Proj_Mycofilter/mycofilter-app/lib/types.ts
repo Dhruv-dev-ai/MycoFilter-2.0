@@ -260,7 +260,7 @@ export interface Device {
   name: string
   location_description?: string
   installed_at?: string
-  commissioned_at?: string
+  commissioned_at?: string | null
   connectivity_method: ConnectivityMethod
   reporting_interval_s: number
   firmware_version?: string

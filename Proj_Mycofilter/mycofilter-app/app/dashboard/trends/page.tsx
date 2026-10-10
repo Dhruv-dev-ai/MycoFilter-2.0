@@ -48,7 +48,12 @@ export default function TrendsPage() {
             <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f1" />
             <XAxis dataKey="time" tick={{fontSize:11}} interval="preserveStartEnd" />
             <YAxis domain={p.domain} tick={{fontSize:11}} />
-            <Tooltip formatter={(v:number)=>[`${v.toFixed(2)} ${p.unit}`,'']} />
+            <Tooltip formatter={(value) => {
+              const numericValue = typeof value === 'number' ? value : Number(value)
+              return Number.isFinite(numericValue)
+                ? [`${numericValue.toFixed(2)} ${p.unit}`, '']
+                : [String(value ?? '—'), '']
+            }} />
             <Legend />
             <Line type="monotone" dataKey="influent" stroke="#3b82f6" strokeWidth={2} dot={false} name="Influent" />
             <Line type="monotone" dataKey="effluent" stroke="#22c55e" strokeWidth={2} dot={false} name="Effluent" />
