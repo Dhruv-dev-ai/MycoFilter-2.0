@@ -1,6 +1,6 @@
 'use client'
 import { useApp } from '@/components/AppContext'
-import { calculateReduction, calculatePHShift, calculateEC, calculateTDS, TDS_K_PROVISIONAL } from '@/lib/calculations'
+import { calculateReduction, calculatePHShift, calculateEC, calculateTDS, calculateLASRemoval, TDS_K_PROVISIONAL } from '@/lib/calculations'
 import type { ECCalibrationProfile } from '@/lib/types'
 import { AlertTriangle } from 'lucide-react'
 
@@ -35,6 +35,8 @@ export default function ComparePage() {
   const { latestReadings, isDemo } = useApp()
   const r = latestReadings
   const inT=r['T_in']?.calibrated_value??null, outT=r['E5']?.calibrated_value??null
+  const inLAS=r['S4']?.calibrated_value??null, outLAS=r['E4']?.calibrated_value??null
+  const lasRemoval=calculateLASRemoval(inLAS, outLAS)
   const inEC=r['S3']?.calibrated_value??null,  outEC=r['E3']?.calibrated_value??null
   const inECr=calculateEC(inEC,inT,EC_PROF), outECr=calculateEC(outEC,outT,EC_PROF)
   const inTDS=calculateTDS(inECr), outTDS=calculateTDS(outECr)
@@ -52,6 +54,7 @@ export default function ComparePage() {
         <Row label="Turbidity" inf={r['S2']?.calibrated_value??null} eff={r['E2']?.calibrated_value??null} unit="NTU" note="Simulated only" />
         <Row label="EC" inf={inEC} eff={outEC} unit="µS/cm" note="Not a proxy for LAS" />
         <Row label="Temperature" inf={inT} eff={outT} unit="°C" />
+        <Row label="LAS concentration" inf={inLAS} eff={outLAS} unit="mg/L" note="Simulated colourimetric estimate" />
         <Row label="Est. TDS" inf={inTDS.TDS_est_mg_L} eff={outTDS.TDS_est_mg_L} unit="mg/L" note={`k=${TDS_K_PROVISIONAL} provisional`} />
       </div>
       <div className="card" style={{padding:'0.875rem 1rem',background:'#fff7ed',border:'1px solid #fed7aa'}}>
@@ -62,6 +65,7 @@ export default function ComparePage() {
           </p>
         </div>
       </div>
+      <p style={{fontSize:'0.72rem',color:'#64748b',marginTop:'0.75rem'}}>Simulated LAS removal: {lasRemoval===null?'—':`${lasRemoval.toFixed(1)}%`} · illustrative only, not an experimental result.</p>
     </div>
   )
 }

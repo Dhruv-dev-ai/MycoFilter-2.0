@@ -74,6 +74,11 @@ export interface SensorConfig {
   measurand: Measurand
   station: MeasurementPoint
   label: string
+  display_tag?: string
+  secondary_label?: string
+  badge_label?: string
+  method_label?: string
+  status_label?: string
   unit: string
   raw_unit?: string
   commissioning_status: CommissioningStatus

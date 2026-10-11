@@ -28,7 +28,7 @@ export default function OverviewPage() {
   const ecRed   = calculateReduction(inEC,   outEC,   'EC')
   const phShift = calculatePHShift(inPH, outPH)
 
-  const sensorCards = DEMO_SENSOR_CONFIGS.slice(0,8)
+  const sensorCards = DEMO_SENSOR_CONFIGS
 
   return (
     <div>
@@ -65,7 +65,9 @@ export default function OverviewPage() {
           const range = RANGE_MAP[cfg.measurand] ?? { min:0, max:100 }
           return (
             <SensorCard key={cfg.tag}
-              tag={cfg.tag} label={cfg.label}
+              tag={cfg.tag} label={cfg.label} displayTag={cfg.display_tag}
+              secondaryLabel={cfg.secondary_label} badgeLabel={cfg.badge_label}
+              methodLabel={cfg.method_label} statusLabel={cfg.status_label}
               value={ev?.calibrated_value??null} unit={cfg.unit}
               station="influent"
               quality={ev?.quality_flag??'missing'}
@@ -87,7 +89,9 @@ export default function OverviewPage() {
           const range = RANGE_MAP[cfg.measurand] ?? { min:0, max:100 }
           return (
             <SensorCard key={cfg.tag}
-              tag={cfg.tag} label={cfg.label}
+              tag={cfg.tag} label={cfg.label} displayTag={cfg.display_tag}
+              secondaryLabel={cfg.secondary_label} badgeLabel={cfg.badge_label}
+              methodLabel={cfg.method_label} statusLabel={cfg.status_label}
               value={ev?.calibrated_value??null} unit={cfg.unit}
               station="effluent"
               quality={ev?.quality_flag??'missing'}

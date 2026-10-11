@@ -6,6 +6,11 @@ import type { QualityFlag, SourceMode } from '@/lib/types'
 interface SensorCardProps {
   tag: string
   label: string
+  displayTag?: string
+  secondaryLabel?: string
+  badgeLabel?: string
+  methodLabel?: string
+  statusLabel?: string
   value: number | null
   unit: string
   station: 'influent' | 'effluent'
@@ -59,7 +64,7 @@ function formatValue(v: number | null, unit: string): string {
   if (unit === 'pH') return v.toFixed(2)
   if (unit === 'NTU') return v.toFixed(1)
   if (unit === 'µS/cm') return v.toFixed(0)
-  if (unit === '°C') return v.toFixed(1)
+  if (unit === '°C' || unit === 'mg/L') return v.toFixed(1)
   return v.toFixed(2)
 }
 
@@ -69,13 +74,14 @@ function rangeFraction(v: number | null, min: number, max: number): number {
 }
 
 export default function SensorCard({
-  tag, label, value, unit, station, quality, source,
+  tag, label, displayTag, secondaryLabel, badgeLabel, methodLabel, statusLabel, value, unit, station, quality, source,
   trend, timestamp, commissioningStatus,
   onClick, rangeMin, rangeMax, rangeWarnMin, rangeWarnMax, footnote,
 }: SensorCardProps) {
   const col = STATION_COLOURS[station]
   const qc  = QUALITY_COLOURS[quality]
-  const isUnconfigured = quality === 'not_configured' || commissioningStatus === 'optional_unconfigured'
+  const isResearchMeasurement = Boolean(methodLabel)
+  const isUnconfigured = !isResearchMeasurement && (quality === 'not_configured' || commissioningStatus === 'optional_unconfigured')
   const isEstimate = source === 'simulated' || quality === 'estimated' || quality === 'uncalibrated'
 
   const showBar = rangeMin !== undefined && rangeMax !== undefined && value !== null
@@ -113,7 +119,7 @@ export default function SensorCard({
           fontFamily: 'monospace', fontSize: '0.75rem', fontWeight: 700,
           color: 'rgba(0,0,0,0.3)',
         }}>
-          {tag}
+          {displayTag ?? tag}
         </span>
       </div>
 
@@ -121,6 +127,11 @@ export default function SensorCard({
       <div style={{ fontSize: '0.8rem', color: '#475569', marginBottom: '0.5rem', fontWeight: 500 }}>
         {label}
       </div>
+      {secondaryLabel && (
+        <div style={{ fontSize: '0.68rem', color: '#94a3b8', marginTop: '-0.25rem', marginBottom: '0.5rem' }}>
+          {secondaryLabel}
+        </div>
+      )}
 
       {/* Value */}
       {isUnconfigured ? (
@@ -139,6 +150,24 @@ export default function SensorCard({
               {trend === 'up' ? <TrendingUp size={16} /> : trend === 'down' ? <TrendingDown size={16} /> : <Minus size={16} />}
             </span>
           )}
+        </div>
+      )}
+
+      {methodLabel && (
+        <div style={{ marginTop: '0.625rem' }}>
+          <div style={{ fontSize: '0.68rem', color: '#64748b', lineHeight: 1.4 }}>{methodLabel}</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginTop: '0.4rem' }}>
+            {badgeLabel && (
+              <span style={{
+                fontSize: '0.58rem', fontWeight: 700, letterSpacing: '0.06em',
+                color: col.label, background: col.bg, border: `1px solid ${col.accent}33`,
+                borderRadius: '999px', padding: '2px 6px',
+              }}>
+                {badgeLabel}
+              </span>
+            )}
+            {statusLabel && <span style={{ fontSize: '0.65rem', color: '#94a3b8' }}>{statusLabel}</span>}
+          </div>
         </div>
       )}
 
@@ -190,14 +219,13 @@ export default function SensorCard({
       </div>
 
       {/* Commissioning note */}
-      {commissioningStatus && commissioningStatus !== 'installed_calibrated' && (
+      {!isResearchMeasurement && commissioningStatus && commissioningStatus !== 'installed_calibrated' && commissioningStatus !== 'proposed_cad' && (
         <div style={{
           marginTop: '0.5rem', padding: '0.25rem 0.5rem',
           background: '#fffbeb', borderRadius: '0.375rem',
           border: '1px solid #fde68a',
           fontSize: '0.68rem', color: '#92400e', lineHeight: 1.4,
         }}>
-          {commissioningStatus === 'proposed_cad' && '📐 Proposed in Rev B CAD — not yet installed'}
           {commissioningStatus === 'optional_unconfigured' && '⊘ Optional — blanked in base configuration'}
           {commissioningStatus === 'installed_uncalibrated' && '⚠ Installed — calibration required'}
           {commissioningStatus === 'selected_awaiting_install' && '📦 Selected — awaiting installation'}

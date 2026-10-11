@@ -18,7 +18,7 @@ export default function LivePage() {
       <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'1.5rem'}}>
         <div>
           <h1 style={{fontSize:'1.5rem',fontWeight:700,color:'#1a2e1b'}}>Live Sensor Readings</h1>
-          <p style={{fontSize:'0.8rem',color:'#64748b',marginTop:4}}>8 base channels · auto-refresh 30s{age!==null?` · ${age}s ago`:''}</p>
+          <p style={{fontSize:'0.8rem',color:'#64748b',marginTop:4}}>8 base channels + 2 simulated LAS readings · auto-refresh 30s{age!==null?` · ${age}s ago`:''}</p>
           {isDemo&&<p style={{fontSize:'0.72rem',color:'#7c3aed',fontWeight:600}}>SIMULATED — not hardware</p>}
         </div>
         <button onClick={refresh} className="btn-secondary" style={{display:'flex',alignItems:'center',gap:6}}>
@@ -33,7 +33,9 @@ export default function LivePage() {
           <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(210px,1fr))',gap:'1rem'}}>
             {DEMO_SENSOR_CONFIGS.filter(c=>c.station===st).map(cfg=>{
               const ev=latestReadings[cfg.tag]; const r=R[cfg.measurand]??{min:0,max:100}
-              return <SensorCard key={cfg.tag} tag={cfg.tag} label={cfg.label}
+              return <SensorCard key={cfg.tag} tag={cfg.tag} label={cfg.label} displayTag={cfg.display_tag}
+                secondaryLabel={cfg.secondary_label} badgeLabel={cfg.badge_label}
+                methodLabel={cfg.method_label} statusLabel={cfg.status_label}
                 value={ev?.calibrated_value??null} unit={cfg.unit} station={st}
                 quality={ev?.quality_flag??'missing'} source={ev?.source_mode??'simulated'}
                 timestamp={ev?.observed_at??null} commissioningStatus={cfg.commissioning_status}

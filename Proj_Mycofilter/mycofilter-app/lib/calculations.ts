@@ -413,6 +413,34 @@ export function calculateReduction(
   }
 }
 
+export interface LinearCalibration {
+  slope: number
+  intercept: number
+}
+
+/** Convert absorbance to an illustrative LAS concentration: C = (A - b) / m. */
+export function calculateLASConcentration(
+  absorbance: number | null,
+  calibration: LinearCalibration,
+): number | null {
+  if (absorbance === null || !Number.isFinite(absorbance) || !Number.isFinite(calibration.slope) || calibration.slope === 0) {
+    return null
+  }
+  const concentration = (absorbance - calibration.intercept) / calibration.slope
+  return Number.isFinite(concentration) && concentration >= 0 ? concentration : null
+}
+
+/** Calculate LAS removal only when both simulated concentrations are valid. */
+export function calculateLASRemoval(
+  influent: number | null,
+  effluent: number | null,
+): number | null {
+  if (influent === null || effluent === null || !Number.isFinite(influent) || !Number.isFinite(effluent) || influent <= 0) {
+    return null
+  }
+  return ((influent - effluent) / influent) * 100
+}
+
 /** pH shift (not a pollutant-removal percentage) */
 export function calculatePHShift(
   pH_influent: number | null,

@@ -16,6 +16,10 @@ import type {
   Alert,
   MaintenanceEvent,
 } from './types'
+import { calculateLASConcentration } from './calculations'
+
+// Illustrative demo coefficients only; replace with experimentally validated calibration data.
+export const LAS_DEMO_CALIBRATION = { slope: 0.05, intercept: 0.1 }
 
 // ---------------------------------------------------------------------------
 // Demo device configuration (Rev B base build)
@@ -57,10 +61,11 @@ export const DEMO_SENSOR_CONFIGS: SensorConfig[] = [
   {
     tag: 'S4', measurand: 'ISE_target', station: 'influent',
     label: 'Influent Target ISE (S4)',
-    unit: '—',
-    commissioning_status: 'optional_unconfigured',
-    port: 'Top cap, M16×1.5 — BLANKED in base build',
-    placeholder_note: 'Target ion not selected. Blanking plug installed. No concentration reported.',
+    unit: 'mg/L',
+    commissioning_status: 'installed_calibrated',
+    secondary_label: 'Primary research target: LAS',
+    method_label: 'Colourimetric Photometric Analysis',
+    port: 'Demo channel — no physical sensor connected',
   },
   {
     tag: 'E1', measurand: 'pH', station: 'effluent',
@@ -88,7 +93,7 @@ export const DEMO_SENSOR_CONFIGS: SensorConfig[] = [
   },
   {
     tag: 'E5', measurand: 'temperature', station: 'effluent',
-    label: 'Effluent Temperature (E5)',
+    label: 'Effluent Temperature (T-eff)', display_tag: 'T_eff',
     unit: '°C',
     commissioning_status: 'proposed_cad',
     port: 'Effluent cell x=154mm, M16×1.5 reducing gland, Ø6 sheath',
@@ -97,10 +102,11 @@ export const DEMO_SENSOR_CONFIGS: SensorConfig[] = [
   {
     tag: 'E4', measurand: 'ISE_target', station: 'effluent',
     label: 'Effluent Target ISE (E4)',
-    unit: '—',
-    commissioning_status: 'optional_unconfigured',
-    port: 'Effluent cell x=176mm, M16×1.5 — BLANKED in base build',
-    placeholder_note: 'Blanking plug installed. No concentration reported.',
+    unit: 'mg/L',
+    commissioning_status: 'installed_calibrated',
+    secondary_label: 'Primary research target: LAS',
+    method_label: 'Colourimetric Photometric Analysis',
+    port: 'Demo channel — no physical sensor connected',
   },
 ]
 
@@ -136,6 +142,11 @@ const EFFLUENT_RANGES = {
   turbidity:   { base: 18.0,  noise: 8.0,  min: 0,    max: 100 },
   EC_uS_cm:    { base: 680.0, noise: 60.0, min: 0,    max: 2000 },
   temperature: { base: 34.5,  noise: 2.0,  min: 10,   max: 50 },
+}
+
+const LAS_ABSORBANCE = {
+  influent: { base: 1.33, noise: 0.05 },
+  effluent: { base: 0.51, noise: 0.03 },
 }
 
 let _seq = 1
@@ -176,16 +187,26 @@ function makeEvent(
 export function generateSimulatedReadings(device_id: string): TelemetryEvent[] {
   const ir = INFLUENT_RANGES
   const er = EFFLUENT_RANGES
+  const influentLAS = calculateLASConcentration(
+    jitter(LAS_ABSORBANCE.influent.base, LAS_ABSORBANCE.influent.noise, 0, 3),
+    LAS_DEMO_CALIBRATION,
+  )
+  const effluentLAS = calculateLASConcentration(
+    jitter(LAS_ABSORBANCE.effluent.base, LAS_ABSORBANCE.effluent.noise, 0, 3),
+    LAS_DEMO_CALIBRATION,
+  )
 
   return [
     makeEvent(device_id, 'S1', 'influent',  'pH',          jitter(ir.pH.base,          ir.pH.noise,          ir.pH.min,          ir.pH.max),          'pH'),
     makeEvent(device_id, 'S2', 'influent',  'turbidity',   jitter(ir.turbidity.base,   ir.turbidity.noise,   ir.turbidity.min,   ir.turbidity.max),   'NTU'),
     makeEvent(device_id, 'S3', 'influent',  'conductivity',jitter(ir.EC_uS_cm.base,    ir.EC_uS_cm.noise,    ir.EC_uS_cm.min,    ir.EC_uS_cm.max),    'µS/cm'),
     makeEvent(device_id, 'T_in','influent', 'temperature', jitter(ir.temperature.base,  ir.temperature.noise, ir.temperature.min,  ir.temperature.max), '°C'),
+    makeEvent(device_id, 'S4', 'influent',  'ISE_target',   influentLAS ?? 0, 'mg/L'),
     makeEvent(device_id, 'E1', 'effluent',  'pH',          jitter(er.pH.base,          er.pH.noise,          er.pH.min,          er.pH.max),          'pH'),
     makeEvent(device_id, 'E2', 'effluent',  'turbidity',   jitter(er.turbidity.base,   er.turbidity.noise,   er.turbidity.min,   er.turbidity.max),   'NTU'),
     makeEvent(device_id, 'E3', 'effluent',  'conductivity',jitter(er.EC_uS_cm.base,    er.EC_uS_cm.noise,    er.EC_uS_cm.min,    er.EC_uS_cm.max),    'µS/cm'),
     makeEvent(device_id, 'E5', 'effluent',  'temperature', jitter(er.temperature.base,  er.temperature.noise, er.temperature.min,  er.temperature.max), '°C'),
+    makeEvent(device_id, 'E4', 'effluent', 'ISE_target',   effluentLAS ?? 0, 'mg/L'),
   ]
 }
 
