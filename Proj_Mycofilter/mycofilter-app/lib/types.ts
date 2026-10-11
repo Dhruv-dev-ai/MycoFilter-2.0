@@ -264,7 +264,7 @@ export interface Device {
   connectivity_method: ConnectivityMethod
   reporting_interval_s: number
   firmware_version?: string
-  last_telemetry_at?: string
+  last_telemetry_at?: string | null
   is_demo: boolean
   sensor_configs: SensorConfig[]
 }
